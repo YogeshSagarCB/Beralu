@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Beralu</string>
+    <string name="accessibility_service_description">Beralu uses accessibility services to detect specific app contexts, like restaurant names in Zomato, to help you take better notes.</string>
 </resources>

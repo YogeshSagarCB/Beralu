@@ -17,6 +17,27 @@ class ContextManagerViewModel @Inject constructor(
     val contexts: StateFlow<List<BeraluContext>> = repository.getContexts()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
+    val contextHierarchy: StateFlow<List<ContextHierarchy>> = combine(
+        repository.getContexts(),
+        repository.getAllSubContexts(),
+        repository.getAllNotes()
+    ) { contexts, subContexts, notes ->
+        contexts.map { context ->
+            val subContextsForContext = subContexts.filter { it.contextId == context.id }
+            val notesForContext = notes.filter { it.contextId == context.id && it.subContextId == null }
+            ContextHierarchy(
+                context = context,
+                subContexts = subContextsForContext.map { subContext ->
+                    SubContextHierarchy(
+                        subContext = subContext,
+                        notes = notes.filter { it.subContextId == subContext.id }
+                    )
+                },
+                notes = notesForContext
+            )
+        }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
     fun addContext(name: String, packageName: String) {
         viewModelScope.launch {
             repository.insertContext(
@@ -34,6 +55,18 @@ class ContextManagerViewModel @Inject constructor(
     fun deleteContext(contextId: String) {
         viewModelScope.launch {
             repository.deleteContext(contextId)
+        }
+    }
+
+    fun deleteSubContext(subContextId: String) {
+        viewModelScope.launch {
+            repository.deleteSubContext(subContextId)
+        }
+    }
+
+    fun deleteNote(noteId: String) {
+        viewModelScope.launch {
+            repository.deleteNote(noteId)
         }
     }
 }

@@ -3,6 +3,10 @@ package com.example.beralu
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation3.runtime.entryProvider
@@ -10,10 +14,15 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
 import com.example.beralu.ui.main.MainScreen
 import com.example.beralu.ui.editor.NoteEditorScreen
-
+import com.example.beralu.ui.settings.SettingsScreen
 @Composable
-fun MainNavigation() {
+fun MainNavigation(
+    isDarkTheme: Boolean,
+    onThemeToggle: (Boolean) -> Unit
+) {
   val backStack = rememberNavBackStack(Main)
+
+  var isBubbleRunning by remember { mutableStateOf(false) }
 
   NavDisplay(
     backStack = backStack,
@@ -21,8 +30,22 @@ fun MainNavigation() {
     entryProvider =
       entryProvider {
         entry<Main> {
-          MainScreen(onItemClick = { navKey -> backStack.add(navKey) })
+          MainScreen(
+            onItemClick = { navKey -> backStack.add(navKey) },
+            onNavigateToSettings = { backStack.add(Settings) }
+          )
         }
+        entry<Settings> {
+            SettingsScreen(
+                onNavigateBack = { backStack.removeLastOrNull() },
+                isDarkTheme = isDarkTheme,
+                onThemeToggle = { onThemeToggle(!isDarkTheme) },
+                isBubbleRunning = isBubbleRunning,
+                onBubbleToggle = { isBubbleRunning = it }
+            )
+        }
+// ...
+
         entry<EditNote> { key ->
           NoteEditorScreen(
             contextId = key.contextId,

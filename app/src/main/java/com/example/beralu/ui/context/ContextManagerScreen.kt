@@ -6,6 +6,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -19,8 +21,10 @@ import com.example.beralu.ui.components.GlassCard
 fun ContextManagerScreen(
     viewModel: ContextManagerViewModel = hiltViewModel()
 ) {
-    val contexts by viewModel.contexts.collectAsStateWithLifecycle()
+    val hierarchy by viewModel.contextHierarchy.collectAsStateWithLifecycle()
     var showAddDialog by remember { mutableStateOf(false) }
+    var expandedContexts by remember { mutableStateOf(setOf<String>()) }
+    var expandedSubContexts by remember { mutableStateOf(setOf<String>()) }
 
     if (showAddDialog) {
         var name by remember { mutableStateOf("") }
@@ -51,18 +55,62 @@ fun ContextManagerScreen(
         }
     ) { padding ->
         LazyColumn(modifier = Modifier.padding(padding).fillMaxSize()) {
-            items(contexts) { context ->
+            items(hierarchy) { item ->
+                val isExpanded = expandedContexts.contains(item.context.id)
                 GlassCard(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
-                    Row(
-                        modifier = Modifier.padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(text = context.name, style = MaterialTheme.typography.titleMedium)
-                            Text(text = context.packageName ?: "", style = MaterialTheme.typography.bodySmall)
+                    Column {
+                        Row(
+                            modifier = Modifier.padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            IconButton(onClick = {
+                                expandedContexts = if (isExpanded) expandedContexts - item.context.id else expandedContexts + item.context.id
+                            }) {
+                                Icon(if (isExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown, "Toggle")
+                            }
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(text = item.context.name, style = MaterialTheme.typography.titleMedium)
+                                Text(text = item.context.packageName ?: "", style = MaterialTheme.typography.bodySmall)
+                            }
+                            IconButton(onClick = { viewModel.deleteContext(item.context.id) }) {
+                                Icon(Icons.Default.Delete, "Delete")
+                            }
                         }
-                        IconButton(onClick = { viewModel.deleteContext(context.id) }) {
-                            Icon(Icons.Default.Delete, "Delete")
+                        if (isExpanded) {
+                            // Render Notes in Context
+                            item.notes.forEach { note ->
+                                Row(modifier = Modifier.padding(start = 32.dp, end = 16.dp, bottom = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                                    Text(text = note.content, modifier = Modifier.weight(1f))
+                                    IconButton(onClick = { viewModel.deleteNote(note.id) }) {
+                                        Icon(Icons.Default.Delete, "Delete")
+                                    }
+                                }
+                            }
+                            // Render Sub-Contexts
+                            item.subContexts.forEach { subItem ->
+                                val isSubExpanded = expandedSubContexts.contains(subItem.subContext.id)
+                                Row(modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                                    IconButton(onClick = {
+                                        expandedSubContexts = if (isSubExpanded) expandedSubContexts - subItem.subContext.id else expandedSubContexts + subItem.subContext.id
+                                    }) {
+                                        Icon(if (isSubExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown, "Toggle")
+                                    }
+                                    Text(text = subItem.subContext.name, style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
+                                    IconButton(onClick = { viewModel.deleteSubContext(subItem.subContext.id) }) {
+                                        Icon(Icons.Default.Delete, "Delete")
+                                    }
+                                }
+                                if (isSubExpanded) {
+                                    subItem.notes.forEach { note ->
+                                        Row(modifier = Modifier.padding(start = 64.dp, end = 16.dp, bottom = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                                            Text(text = note.content, modifier = Modifier.weight(1f))
+                                            IconButton(onClick = { viewModel.deleteNote(note.id) }) {
+                                                Icon(Icons.Default.Delete, "Delete")
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }

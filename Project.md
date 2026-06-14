@@ -1,7 +1,7 @@
 # Beralu — Context-Aware Note-Taking App
 
 ## Current Project Status
-*Note: The project is currently experiencing a critical build failure (AGP 9.0.1 / Hilt plugin incompatibility). The team is investigating build configuration workarounds.*
+Project is stable and functional with the refactored Dashboard UI.
 
 ## Overview
 ...
@@ -94,12 +94,10 @@ Permissions used in v1:
 
 ## Design Language
 
-- **Dark mode first** (no light mode in v1)
-- **Glassmorphism** aesthetic — frosted glass panels, subtle blur effects
+- **Light/Dark theme support**
+- **Material 3 components**
 - **Premium feel** — smooth animations, micro-interactions
-- Material 3 components adapted to dark glassmorphism style
 - Typography: Modern sans-serif (e.g., Google Fonts — Inter or Outfit)
-- Accent color: TBD (vibrant single accent, e.g., electric indigo or cyan)
 
 ---
 
@@ -121,7 +119,7 @@ Permissions used in v1:
 
 ## MVP Scope (v1)
 
-**In Scope:**
+**Completed:**
 - [x] Floating bubble (always-on overlay)
 - [x] Expand bubble → panel with context-filtered notes
 - [x] Quick-create note from bubble panel
@@ -129,15 +127,13 @@ Permissions used in v1:
 - [x] Manual context tagging (user assigns context to each note)
 - [x] Plain text + rich text notes (bold, italic, bullets, headings)
 - [x] Local-only storage (Room DB)
-- [x] Dark mode glassmorphism UI
 - [x] Drag-and-drop reposition of bubble
+- [x] Dashboard UI Refactor: Nested hierarchy, swipe-to-delete, batch actions, light/dark mode support, app name resolution.
 
 **Out of Scope (v1):**
-- Auto-detection of foreground app/screen
 - Cloud sync / account sign-in
 - Media attachments (images, audio)
 - Export / sharing
-- Light mode
 - Localization
 
 ---
@@ -147,19 +143,14 @@ Permissions used in v1:
 | Permission | Purpose |
 |---|---|
 | `SYSTEM_ALERT_WINDOW` | Draw the floating bubble over other apps |
-
-Future (v2+):
-- `BIND_ACCESSIBILITY_SERVICE` — to detect active screen/UI context
-- `PACKAGE_USAGE_STATS` — to detect which app is in foreground
+| `BIND_ACCESSIBILITY_SERVICE` | Used to auto-detect Zomato restaurant context |
+| `PACKAGE_USAGE_STATS` | Used to detect foreground application |
 
 ---
 
 ## Open Items / Future Considerations
 
-- **Accent color** — final decision pending (suggest: Electric Indigo `#6C63FF` or Cyan `#00D4FF`)
-- **Bubble icon** — custom icon or letter-based avatar
-- **Min SDK** — recommendation: API 26 (Android 8.0) for `SYSTEM_ALERT_WINDOW` with `TYPE_APPLICATION_OVERLAY`
-- **Auto-detection (v2)** — Accessibility Service approach + Accessibility Service permission justification for Play Store
+- **Auto-detection (v2)** — Refine Accessibility Service approach
 - **Cloud sync (v2)** — Firebase Firestore + Firebase Auth
 
 ---
